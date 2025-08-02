@@ -38,12 +38,12 @@ impl Block {
         transactions: &[Transaction],
     ) -> (u64, String) {
         // difficulty runs the loops to increase the number of zero's in front of the hash
-        let difficulty = 1;
+        let difficulty = 2;
         let mut nounce = 0;
 
         loop {
             let block_data = format!(
-                "{} {} {:?} {} {} ",
+                "{} {} {:?} {} {}",
                 index, timestamp, transactions, prev_block_hash, nounce
             );
             let hash = format!("{:x}", Sha256::digest(&block_data));
@@ -52,5 +52,45 @@ impl Block {
             }
             nounce += 1
         }
+    }
+
+    pub fn verify_chain(chain: Vec<Block>) {
+        let difficulty = 2;
+
+        for i in 1..chain.len() {
+            let current = &chain[i];
+            let prev = &chain[i - 1];
+
+            if current.prev_block_hash != prev.hash {
+                println!("{}", current.prev_block_hash);
+                println!("{}", prev.hash);
+                println!("Invalid block link at {}", i);
+                return;
+            }
+
+            let block_data = format!(
+                "{} {} {:?} {} {}",
+                current.index,
+                current.timestamp,
+                current.transactions,
+                current.prev_block_hash,
+                current.nonce
+            );
+
+            let computed_hash = format!("{:x}", Sha256::digest(&block_data));
+
+            if current.hash != computed_hash {
+                println!("Invalid block hash for {}", current.index);
+                return;
+            }
+
+            if !current.hash.starts_with(&"0".repeat(difficulty)) {
+                println!("POW is not satisfied for block {}", i);
+                return;
+            }
+        }
+
+        println!("chain is valid!");
+        return;
     }
 }

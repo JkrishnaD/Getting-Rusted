@@ -40,6 +40,8 @@ fn main() {
             println!("Block mined {}", block.hash);
             chain.push(block);
             mempool.clear();
+        } else if trimmed == "verify" {
+            Block::verify_chain(chain.clone());
         } else {
             let parts: Vec<&str> = trimmed.split_whitespace().collect();
 
